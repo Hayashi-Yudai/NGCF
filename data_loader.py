@@ -59,7 +59,28 @@ class DataLoader:
                 self.n_test += len(items)
 
                 self.test_data[uid] = items
+    
+    def create_adjacency_matrix(self) -> sp.csr_matrix:
+        matrix = sp.dok_matrix(
+            (
+                self.n_users + self.n_items, 
+                self.n_users + self.n_items,
+            ), 
+            dtype=np.float32,
+        ).tolil()  # Convert to list-to-list format
+        R = self.R.tolil()
 
+        matrix[:self.n_users, self.n_users:] = R
+        matrix[self.n_users:, :self.n_users] = R.T
+
+        rowsum = np.array(matrix.sum(1))
+        d_inv = np.power(rowsum, -1).flatten()
+        d_inv[np.isinf(d_inv)] = 0.
+        d_mat_inv = sp.diags(d_inv)
+
+        norm_matrix = d_mat_inv.dot(matrix)
+
+        return norm_matrix.tocsr()
 
 
 if __name__ == "__main__":
@@ -67,3 +88,5 @@ if __name__ == "__main__":
 
     print(f"n_items: {data.n_items}")
     print(f"n_users: {data.n_users}")
+
+    _ = data.create_adjacency_matrix()
