@@ -1,57 +1,61 @@
 import numpy as np
 import pathlib
+import random
 from scipy import sparse as sp
+from typing import Dict, List, Tuple
 
 from util import simple_logger
 
-class DataLoader:
-    def __init__(self, path: str, batch_size: int):
+
+class Dataset:
+    def __init__(self, path: str):
         self.path = pathlib.Path(path)
-        self.batch_size = batch_size
 
-        self.exist_users = []
+        self.users: List[int] = []
+        self.items: List[int] = []
+        self.train_num: int = 0
+        self.test_num: int = 0
 
-        self.n_users = 0
-        self.n_items = 0
-        self.n_train = 0
-        self.n_test = 0
-        self.train_data = {}
-        self.test_data = {}
+        self.train_data: Dict[int, List[int]] = {}
+        self.test_data: Dict[int, List[int]] = {}
 
+    @property
+    def user_num(self) -> int:
+        return max(self.users) + 1
+
+    @property
+    def item_num(self) -> int:
+        return max(self.items) + 1
+
+    def load(self):
         self._load_train(train_file=self.path / "train.txt")
         self._load_test(test_file=self.path / "test.txt")
-        
-        self.n_items += 1
-        self.n_users += 1
-
-        self.R = sp.dok_matrix((self.n_users, self.n_items), dtype=np.float32)
-        for u, items in self.train_data.items():
-            for item in items:
-                self.R[u, item] = 1.0
 
     def _load_train(self, train_file: pathlib.Path):
-        simple_logger("Loading train data", __file__)
+        simple_logger("Loading train data", __name__)
         with open(train_file) as f:
             for line in f.readlines():
-                if len(line) == 0: continue
+                if len(line) == 0:
+                    continue
 
                 line = line.strip("\n").split(" ")
                 items = [int(i) for i in line[1:]]
                 uid = int(line[0])
 
-                self.exist_users.append(uid)
-
-                self.n_items = max(self.n_items, max(items))
-                self.n_users = max(self.n_users, uid)
-                self.n_train += len(items)
+                self.users.append(uid)
+                self.items += items
+                self.train_num += len(items)
 
                 self.train_data[uid] = items
-    
+
+            self.items = list(set(self.items))
+
     def _load_test(self, test_file: pathlib.Path):
-        simple_logger("Loading test data", __file__)
+        simple_logger("Loading test data", __name__)
         with open(test_file) as f:
             for line in f.readlines():
-                if len(line) == 0: continue
+                if len(line) == 0:
+                    continue
 
                 try:
                     line = line.strip("\n").split(" ")
@@ -59,48 +63,80 @@ class DataLoader:
                     items = [int(i) for i in line[1:]]
                 except Exception:
                     continue
-                self.n_items = max(self.n_items, max(items))
-                self.n_test += len(items)
+                self.test_num += len(items)
 
                 self.test_data[uid] = items
-    
-    def create_adjacency_matrix(self) -> sp.csr_matrix:
-        matrix = sp.dok_matrix(
-            (
-                self.n_users + self.n_items, 
-                self.n_users + self.n_items,
-            ), 
-            dtype=np.float32,
-        ).tolil()  # Convert to list-to-list format
-        R = self.R.tolil()
 
-        matrix[:self.n_users, self.n_users:] = R
-        matrix[self.n_users:, :self.n_users] = R.T
 
-        rowsum = np.array(matrix.sum(1))
-        d_inv = np.power(rowsum, -1).flatten()
-        d_inv[np.isinf(d_inv)] = 0.
-        d_mat_inv = sp.diags(d_inv)
+class Preprocessor:
+    def __init__(self, dataset: Dataset):
+        self.dataset = dataset
+        self.path: pathlib.Path = self.dataset.path
 
-        norm_matrix = d_mat_inv.dot(matrix)
+        self.R = sp.dok_matrix((dataset.user_num, dataset.item_num), dtype=np.float32)
+        for user, items in self.dataset.train_data.items():
+            for item in items:
+                self.R[user, item] = 1.0
 
-        return norm_matrix.tocsr()
-    
     def get_adjacency_matrix(self) -> sp.csr_matrix:
         if (self.path / "s_norm_adj_mat.npz").exists():
             norm_adj_mat = sp.load_npz(self.path / "s_norm_adj_mat.npz")
         else:
             simple_logger("Adjacency matrix does not exist, creating...", __file__)
-            norm_adj_mat = self.create_adjacency_matrix()
+            norm_adj_mat = self._create_adjacency_matrix()
             sp.save_npz(self.path / "s_norm_adj_mat.npz", norm_adj_mat)
 
         return norm_adj_mat
 
+    def _create_adjacency_matrix(self) -> sp.csr_matrix:
+        matrix = sp.dok_matrix(
+            (
+                self.dataset.user_num + self.dataset.item_num,
+                self.dataset.user_num + self.dataset.item_num,
+            ),
+            dtype=np.float32,
+        ).tolil()  # Convert to list-to-list format
+        R = self.R.tolil()
+
+        matrix[: self.dataset.user_num, self.dataset.user_num :] = R
+        matrix[self.dataset.user_num :, : self.dataset.user_num] = R.T
+
+        rowsum = np.array(matrix.sum(1))
+        d_inv = np.power(rowsum, -1).flatten()
+        d_inv[np.isinf(d_inv)] = 0.0
+        d_mat_inv = sp.diags(d_inv)
+
+        norm_matrix = d_mat_inv.dot(matrix)
+
+        return norm_matrix.tocsr()
+
+
+class Sampler:
+    def __init__(self, dataset: Dataset, batch_size: int):
+        self.dataset = dataset
+        self.batch_size = batch_size
+
+    def sample(self) -> Tuple[List[int]]:
+        users = random.sample(self.dataset.users, self.batch_size)
+
+        pos_items = []
+        neg_items = []
+        for user in users:
+            pos_items += np.random.choice(self.dataset.train_data[user], 1).tolist()
+            neg_items += np.random.choice(
+                list(set(self.dataset.items) - set(self.dataset.train_data[user])), 1
+            ).tolist()
+
+        return users, pos_items, neg_items
+
 
 if __name__ == "__main__":
-    data = DataLoader(path="./Data/gowalla", batch_size=64)
+    data = Dataset(path="./Data/gowalla")
+    data.load()
 
-    print(f"n_items: {data.n_items}")
-    print(f"n_users: {data.n_users}")
+    print(f"n_users: {data.user_num}")
+    print(f"n_items: {data.item_num}")
 
-    _ = data.create_adjacency_matrix()
+    # _ = data.create_adjacency_matrix()
+    sampler = Sampler(data, batch_size=2)
+    print(sampler.sample())
