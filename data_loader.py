@@ -2,6 +2,8 @@ import numpy as np
 import pathlib
 from scipy import sparse as sp
 
+from util import simple_logger
+
 class DataLoader:
     def __init__(self, path: str, batch_size: int):
         self.path = pathlib.Path(path)
@@ -28,6 +30,7 @@ class DataLoader:
                 self.R[u, item] = 1.0
 
     def _load_train(self, train_file: pathlib.Path):
+        simple_logger("Loading train data", __file__)
         with open(train_file) as f:
             for line in f.readlines():
                 if len(line) == 0: continue
@@ -45,6 +48,7 @@ class DataLoader:
                 self.train_data[uid] = items
     
     def _load_test(self, test_file: pathlib.Path):
+        simple_logger("Loading test data", __file__)
         with open(test_file) as f:
             for line in f.readlines():
                 if len(line) == 0: continue
@@ -81,6 +85,16 @@ class DataLoader:
         norm_matrix = d_mat_inv.dot(matrix)
 
         return norm_matrix.tocsr()
+    
+    def get_adjacency_matrix(self) -> sp.csr_matrix:
+        if (self.path / "s_norm_adj_mat.npz").exists():
+            norm_adj_mat = sp.load_npz(self.path / "s_norm_adj_mat.npz")
+        else:
+            simple_logger("Adjacency matrix does not exist, creating...", __file__)
+            norm_adj_mat = self.create_adjacency_matrix()
+            sp.save_npz(self.path / "s_norm_adj_mat.npz", norm_adj_mat)
+
+        return norm_adj_mat
 
 
 if __name__ == "__main__":
