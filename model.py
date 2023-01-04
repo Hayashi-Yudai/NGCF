@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from scipy import sparse as sp
-from typing import List
+from typing import List, Tuple
 
 
 class NGCF(nn.Module):
@@ -19,7 +19,7 @@ class NGCF(nn.Module):
         self.layers: List[int] = config.layers
         self.decay: float = config.decay
         self.mess_dropout: List[float] = config.mess_dropout
-        self.node_dropout: List[float] = config.node_dropout[0]
+        self.node_dropout: float = config.node_dropout[0]
 
         self.norm_adj = norm_adj
         self.sparse_norm_adj = self._convert_sp_mat_to_sp_tensor(self.norm_adj).to(
@@ -75,12 +75,14 @@ class NGCF(nn.Module):
         else:
             A_hat = self.sparse_norm_adj
 
+        # Eq. (1) in the paper
         ego_embeddings = torch.cat(
             [self.embedding_dict["user_emb"], self.embedding_dict["item_emb"]], 0
         )
         all_embeddings = [ego_embeddings]
 
         for k in range(len(self.layers)):
+            # Eq. (7) in the paper
             side_embeddings = torch.sparse.mm(A_hat, ego_embeddings)
             sum_embeddings = (
                 torch.matmul(side_embeddings, self.weight_dict[f"W_gc_{k}"])
@@ -100,6 +102,7 @@ class NGCF(nn.Module):
 
             all_embeddings += [norm_embeddings]
 
+        # Eq. (9) in the paper
         all_embeddings = torch.cat(all_embeddings, 1)
         u_g_embeddings = all_embeddings[: self.n_user, :]
         i_g_embeddings = all_embeddings[self.n_user :, :]
@@ -110,7 +113,12 @@ class NGCF(nn.Module):
 
         return u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings
 
-    def sparse_dropout(self, x, rate, noise_shape):
+    def sparse_dropout(
+        self, x: torch.Tensor, rate: float, noise_shape: Tuple[int]
+    ) -> torch.Tensor:
+        """
+        Node dropout
+        """
         random_tensor = 1 - rate
         random_tensor += torch.rand(noise_shape).to(x.device)
         dropout_mask = torch.floor(random_tensor).type(torch.bool)

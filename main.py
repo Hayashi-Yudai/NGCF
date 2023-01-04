@@ -18,7 +18,7 @@ class Config:
     decay: float = 1e-5
     node_dropout_flag: bool = True
     node_dropout: List[float] = [0.1]
-    mess_dropout: List[float] = [0.1, 0.1, 0.1]
+    mess_dropout: List[float] = [0.1, 0.1, 0.1]  # Message dropout
 
     device: str = "cuda:0" if torch.cuda.is_available() else "cpu"
 
