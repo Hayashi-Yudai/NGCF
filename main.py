@@ -9,7 +9,7 @@ from util import simple_logger
 
 
 class Config:
-    batch_size: int = 64
+    batch_size: int = 2048
     epoch: int = 10
     emb_size: int = 64
     layers: List[int] = [64, 64, 64]
@@ -42,22 +42,24 @@ if __name__ == "__main__":
         loss, mf_loss, emb_loss = 0.0, 0.0, 0.0
         n_batch = dataset.train_num // Config.batch_size + 1
 
+        simple_logger(f"n_batch: {n_batch}", __name__)
         for idx in range(n_batch):
+            simple_logger(f"batch_{idx}", __name__)
             users, pos_items, neg_items = sampler.sample()
             u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings = model(
                 users, pos_items, neg_items, drop_flag=Config.node_dropout_flag
             )
-            # batch_loss, batch_mf_loss, batch_emb_loss = model.create_bpr_loss(
-            #     u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings
-            # )
+            batch_loss, batch_mf_loss, batch_emb_loss = model.create_bpr_loss(
+                u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings
+            )
 
-            # optimizer.zero_grad()
-            # batch_loss.backward()
-            # optimizer.step()
+            optimizer.zero_grad()
+            batch_loss.backward()
+            optimizer.step()
 
-            # loss += batch_loss
-            # mf_loss += batch_mf_loss
-            # emb_loss += batch_emb_loss
+            loss += batch_loss
+            mf_loss += batch_mf_loss
+            emb_loss += batch_emb_loss
 
         if (epoch + 1) % 10 != 0:
             simple_logger(f"Epoch {epoch}", __name__)
