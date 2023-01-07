@@ -129,12 +129,22 @@ class Sampler:
         pos_items = []
         neg_items = []
         for user in users:
-            pos_items += np.random.choice(self.dataset.train_data[user], 1).tolist()
-            neg_items += np.random.choice(
-                list(set(self.dataset.items) - set(self.dataset.train_data[user])), 1
-            ).tolist()
+            pos_items.append(self._sample_pos_item(user))
+            neg_items.append(self._sample_neg_item(user))
 
         return users, pos_items, neg_items
+
+    def _sample_pos_item(self, user: int) -> int:
+        users_positive_items = self.dataset.train_data[user]
+        idx = np.random.randint(low=0, high=len(users_positive_items))
+        return users_positive_items[idx]
+
+    def _sample_neg_item(self, user: int) -> int:
+        users_positive_items = self.dataset.train_data[user]
+        while True:
+            idx = np.random.randint(low=0, high=len(self.dataset.items))
+            if self.dataset.items[idx] not in users_positive_items:
+                return self.dataset.items[idx]
 
 
 if __name__ == "__main__":
