@@ -1,6 +1,7 @@
 from datetime import datetime
 import torch
 import torch.optim as optim
+from tqdm import tqdm
 from typing import List
 
 from data_loader import Dataset, Preprocessor, Sampler
@@ -44,7 +45,7 @@ if __name__ == "__main__":
         n_batch = dataset.train_num // Config.batch_size + 1
 
         simple_logger(f"n_batch: {n_batch}", __name__)
-        for idx in range(n_batch):
+        for idx in tqdm(range(n_batch)):
             users, pos_items, neg_items = sampler.sample()
             u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings = model(
                 users, pos_items, neg_items, drop_flag=Config.node_dropout_flag
