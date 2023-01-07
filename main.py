@@ -9,8 +9,8 @@ from util import simple_logger
 
 
 class Config:
-    batch_size: int = 2048
-    epoch: int = 10
+    batch_size: int = 1024
+    epoch: int = 400
     emb_size: int = 64
     layers: List[int] = [64, 64, 64]
 
@@ -38,13 +38,13 @@ if __name__ == "__main__":
     sampler = Sampler(dataset, batch_size=Config.batch_size)
 
     simple_logger("Start training", __name__)
+    best_loss = 1e8
     for epoch in range(Config.epoch):
         loss, mf_loss, emb_loss = 0.0, 0.0, 0.0
         n_batch = dataset.train_num // Config.batch_size + 1
 
         simple_logger(f"n_batch: {n_batch}", __name__)
         for idx in range(n_batch):
-            simple_logger(f"batch_{idx}", __name__)
             users, pos_items, neg_items = sampler.sample()
             u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings = model(
                 users, pos_items, neg_items, drop_flag=Config.node_dropout_flag
@@ -66,3 +66,8 @@ if __name__ == "__main__":
             simple_logger(f"\tloss: {loss:.5f}", __name__)
             simple_logger(f"\tmf_loss: {mf_loss:.5f}", __name__)
             simple_logger(f"\temb_loss: {emb_loss:.5f}", __name__)
+
+        if loss < best_loss:
+            best_loss = loss
+            torch.save(model.state_dict(), "best_model.pkl")
+            simple_logger("Saved model", __name__)
