@@ -14,7 +14,7 @@ class Config:
     emb_size: int = 64
     layers: List[int] = [64, 64, 64]
 
-    lr: float = 1e-5
+    lr: float = 1e-4
     decay: float = 1e-5
     node_dropout_flag: bool = True
     node_dropout: List[float] = [0.1]

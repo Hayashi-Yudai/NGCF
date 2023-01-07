@@ -31,6 +31,11 @@ class Dataset:
         self._load_train(train_file=self.path / "train.txt")
         self._load_test(test_file=self.path / "test.txt")
 
+        simple_logger(f"n_users: {len(self.users)}", __name__)
+        simple_logger(f"n_items: {len(self.items)}", __name__)
+        simple_logger(f"train dataset: {self.train_num}", __name__)
+        simple_logger(f"test dataset: {self.test_num}", __name__)
+
     def _load_train(self, train_file: pathlib.Path):
         simple_logger("Loading train data", __name__)
         with open(train_file) as f:
@@ -82,9 +87,11 @@ class Preprocessor:
         if (self.path / "s_norm_adj_mat.npz").exists():
             norm_adj_mat = sp.load_npz(self.path / "s_norm_adj_mat.npz")
         else:
-            simple_logger("Adjacency matrix does not exist, creating...", __file__)
+            simple_logger("Adjacency matrix does not exist, creating...", __name__)
             norm_adj_mat = self._create_adjacency_matrix()
             sp.save_npz(self.path / "s_norm_adj_mat.npz", norm_adj_mat)
+
+        simple_logger(f"Loaded adjacency matrix shape: {norm_adj_mat.shape}", __name__)
 
         return norm_adj_mat
 
