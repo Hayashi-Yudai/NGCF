@@ -6,6 +6,7 @@ from typing import List
 
 from data_loader import Dataset, Preprocessor, Sampler
 from model import NGCF
+from evaluate import evaluate
 from util import simple_logger
 
 
@@ -40,6 +41,7 @@ if __name__ == "__main__":
 
     simple_logger("Start training", __name__)
     best_loss = 1e8
+    precisions, recalls, ndcgs = [], [], []
     for epoch in range(Config.epoch):
         loss, mf_loss, emb_loss = 0.0, 0.0, 0.0
         n_batch = dataset.train_num // Config.batch_size + 1
@@ -68,7 +70,24 @@ if __name__ == "__main__":
             simple_logger(f"\tmf_loss: {mf_loss:.5f}", __name__)
             simple_logger(f"\temb_loss: {emb_loss:.5f}", __name__)
 
-        if loss < best_loss:
+        simple_logger(f"Finished epoch: {epoch}", __name__)
+        simple_logger("Start evaluation", __name__)
+        evals = evaluate(
+            model,
+            dataset.users,
+            dataset.items,
+            dataset.train_data,
+            dataset.test_data,
+            k=20,
+        )
+        precisions.append(evals["precision"])
+        recalls.append(evals["recall"])
+        ndcgs.append(evals["ndcgs"])
+        if evals["precision"] < best_loss:
             best_loss = loss
             torch.save(model.state_dict(), "best_model.pkl")
             simple_logger("Saved model", __name__)
+
+    np.save('precision', precisions)
+    np.save('recall', recall)
+    np.save('ndcg', ndcg)

@@ -50,10 +50,7 @@ def evaluate(
             evaluate_vals["precision"].append(precision_at_k(ranking, ground_truth, k))
             evaluate_vals["ndcg"].append(ndcg_at_k(scores, gt_scores, k))
 
-        simple_logger(f"Recall: {np.mean(evaluate_vals['recall'])}", __name__)
-        simple_logger(f"Precision: {np.mean(evaluate_vals['precision'])}", __name__)
-        simple_logger(f"NDCG: {np.mean(evaluate_vals['ndcg'])}", __name__)
-        break
+    return {k: np.mean(v) for k, v in evaluate_vals.items()}
 
 
 if __name__ == "__main__":
