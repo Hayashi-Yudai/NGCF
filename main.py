@@ -40,7 +40,7 @@ if __name__ == "__main__":
     sampler = Sampler(dataset, batch_size=Config.batch_size)
 
     simple_logger("Start training", __name__)
-    best_loss = 1e8
+    best_precision = 0.0
     precisions, recalls, ndcgs = [], [], []
     for epoch in range(Config.epoch):
         loss, mf_loss, emb_loss = 0.0, 0.0, 0.0
@@ -82,12 +82,18 @@ if __name__ == "__main__":
         )
         precisions.append(evals["precision"])
         recalls.append(evals["recall"])
-        ndcgs.append(evals["ndcgs"])
-        if evals["precision"] < best_loss:
-            best_loss = loss
+        ndcgs.append(evals["ndcg"])
+        if evals["precision"] > best_precision:
+            simple_logger(
+                f"Precision@20 increased {best_precision} →　{evals['precision']}",
+                __name__,
+            )
+            best_precision = evals["precision"]
             torch.save(model.state_dict(), "best_model.pkl")
             simple_logger("Saved model", __name__)
+        else:
+            simple_logger(f"Best precision remain {best_precision}", __name__)
 
-    np.save('precision', precisions)
-    np.save('recall', recall)
-    np.save('ndcg', ndcg)
+    np.save("precision", precisions)
+    np.save("recall", recall)
+    np.save("ndcg", ndcg)
