@@ -155,3 +155,8 @@ class NGCF(nn.Module):
         emb_loss = self.decay * regularizer / self.batch_size
 
         return mf_loss + emb_loss, mf_loss, emb_loss
+
+    def rating(
+        self, u_g_embeddings: torch.Tensor, i_g_embeddings: torch.Tensor
+    ) -> float:
+        return torch.matmul(u_g_embeddings, i_g_embeddings.t())
