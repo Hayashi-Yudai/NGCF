@@ -19,26 +19,28 @@ def evaluate(
     k: int,
 ):
     batch_size = 1024  # TODO: Move to config
-    user_batches = np.array_split(users, len(users) // batch_size + 1)
+    test_users = list(test_data.keys())
+    user_batches = np.array_split(test_users, len(test_users) // batch_size + 1)
+
+    items = np.array(items)
 
     evaluate_vals = {"recall": [], "precision": [], "ndcg": []}
-    for num, user_batch in enumerate(user_batches):
-        simple_logger(f"Batch: {num+1}/{len(user_batches)}", __name__)
+    simple_logger(f"Evaluate with {len(user_batches)} batches", __name__)
+    for num, user_batch in tqdm(enumerate(user_batches)):
         # NOTE: Split in batch if OOM
         user_embs, item_embs, _ = model(user_batch, items, [], drop_flag=False)
         ratings = (
-            model.rating(user_embs, item_embs).detach().cpu()
+            model.rating(user_embs, item_embs).detach().cpu().numpy()
         )  # user_num x item_num
 
-        for idx, user in tqdm(enumerate(user_batch)):
+        for idx, user in enumerate(user_batch):
             user_ratings = ratings[idx]
             items_in_train = train_data[user]
 
             ranking_idx = np.argsort(-user_ratings)
             # Create ranking with items not in training data
-            ranking = [
-                items[idx] for idx in ranking_idx if items[idx] not in items_in_train
-            ][:k]
+            ranking = items[ranking_idx]
+            ranking = ranking[~np.isin(ranking, items_in_train)][:k]
             ground_truth = test_data[user]  # Item IDs
             gt_scores = [1.0] * len(ground_truth)
             scores = np.zeros_like(ranking)
