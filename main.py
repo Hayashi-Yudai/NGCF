@@ -12,6 +12,7 @@ from util import simple_logger
 
 class Config:
     batch_size: int = 1024
+    batch_size_val: int = 1024
     epoch: int = 400
     emb_size: int = 64
     layers: List[int] = [64, 64, 64]
@@ -79,13 +80,14 @@ if __name__ == "__main__":
             dataset.train_data,
             dataset.test_data,
             k=20,
+            batch_size=Config.batch_size_val,
         )
         precisions.append(evals["precision"])
         recalls.append(evals["recall"])
         ndcgs.append(evals["ndcg"])
         if evals["precision"] > best_precision:
             simple_logger(
-                f"Precision@20 increased {best_precision} →　{evals['precision']}",
+                f"Precision@20 increased {best_precision} → {evals['precision']}",
                 __name__,
             )
             best_precision = evals["precision"]

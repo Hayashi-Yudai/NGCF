@@ -15,8 +15,8 @@ def evaluate(
     train_data: Dict[int, List[int]],
     test_data: Dict[int, List[int]],
     k: int,
+    batch_size: int,
 ):
-    batch_size = 1024  # TODO: Move to config
     test_users = list(test_data.keys())
     user_batches = np.array_split(test_users, len(test_users) // batch_size + 1)
 
