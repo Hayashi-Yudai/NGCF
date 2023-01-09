@@ -27,7 +27,7 @@ def dcg_at_k(scores: List[float], k: int, method: int = 1) -> float:
     if method == 0:
         return scores[0] + np.sum(scores[1:k] / np.log2(np.arange(2, k + 1)))
     if method == 1:
-        return np.sum((2**scores[:k] - 1) / np.log2(np.arange(1, k + 1) + 1))
+        return np.sum((2 ** scores[:k] - 1) / np.log2(np.arange(1, k + 1) + 1))
     else:
         raise ValueError("method must be 0 or 1")
 
