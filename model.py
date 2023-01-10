@@ -135,7 +135,7 @@ class NGCF(nn.Module):
 
     def _convert_sp_mat_to_sp_tensor(self, X):
         coo = X.tocoo()
-        i = torch.LongTensor(np.concatenate([coo.row, coo.col]))
+        i = torch.LongTensor([coo.row, coo.col])
         v = torch.from_numpy(coo.data).float()
         return torch.sparse.FloatTensor(i, v, coo.shape)
 
