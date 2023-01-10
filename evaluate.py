@@ -67,6 +67,14 @@ if __name__ == "__main__":
     model = NGCF(dataset.user_num, dataset.item_num, norm_adj, Config).to("cuda:0")
     model.load_state_dict(torch.load("best_model.pkl"))
 
-    evaluate(
-        model, dataset.users, dataset.items, dataset.train_data, dataset.test_data, 10
+    print(
+        evaluate(
+            model,
+            dataset.users,
+            dataset.items,
+            dataset.train_data,
+            dataset.test_data,
+            20,
+            1024,
+        )
     )

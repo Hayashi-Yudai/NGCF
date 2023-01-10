@@ -3,6 +3,7 @@ import torch
 import torch.optim as optim
 from tqdm import tqdm
 from typing import List
+import numpy as np
 
 from data_loader import Dataset, Preprocessor, Sampler
 from model import NGCF

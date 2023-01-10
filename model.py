@@ -85,7 +85,9 @@ class NGCF(nn.Module):
             # Eq. (7) in the paper
             side_embeddings = torch.sparse.mm(A_hat, ego_embeddings)
             sum_embeddings = (
-                torch.matmul(side_embeddings + ego_embeddings, self.weight_dict[f"W_gc_{k}"])
+                torch.matmul(
+                    side_embeddings + ego_embeddings, self.weight_dict[f"W_gc_{k}"]
+                )
                 + self.weight_dict[f"b_gc_{k}"]
             )
             bi_embeddings = torch.mul(ego_embeddings, side_embeddings)
@@ -133,7 +135,7 @@ class NGCF(nn.Module):
 
     def _convert_sp_mat_to_sp_tensor(self, X):
         coo = X.tocoo()
-        i = torch.LongTensor([coo.row, coo.col])
+        i = torch.LongTensor(np.concatenate([coo.row, coo.col]))
         v = torch.from_numpy(coo.data).float()
         return torch.sparse.FloatTensor(i, v, coo.shape)
 
