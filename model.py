@@ -85,7 +85,7 @@ class NGCF(nn.Module):
             # Eq. (7) in the paper
             side_embeddings = torch.sparse.mm(A_hat, ego_embeddings)
             sum_embeddings = (
-                torch.matmul(side_embeddings, self.weight_dict[f"W_gc_{k}"])
+                torch.matmul(side_embeddings + ego_embeddings, self.weight_dict[f"W_gc_{k}"])
                 + self.weight_dict[f"b_gc_{k}"]
             )
             bi_embeddings = torch.mul(ego_embeddings, side_embeddings)
