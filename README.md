@@ -17,3 +17,11 @@ poetry run python main.py
 ```
 
 If you want to change some parameters, edit `Config` in main.py.
+
+
+## Experiment
+
+### GPU Memory consumption
+
+- Gowalla: 1.5 GB
+- Amazon-Book: 3.3 GB
