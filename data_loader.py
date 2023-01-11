@@ -110,7 +110,7 @@ class Preprocessor:
 
         rowsum = np.array(matrix.sum(1))  # Number of first-hop neighbors
         d_inv_sqrt = np.power(rowsum, -0.5).flatten()
-        d_inv_sqrt[np.isinf(d_inv)] = 0.0
+        d_inv_sqrt[np.isinf(d_inv_sqrt)] = 0.0
         d_mat_inv_sqrt = sp.diags(d_inv_sqrt)
 
         norm_matrix = matrix.dot(d_mat_inv_sqrt).transpose().dot(d_mat_inv_sqrt)
