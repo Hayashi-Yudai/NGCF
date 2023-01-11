@@ -12,6 +12,8 @@ from util import simple_logger
 
 
 class Config:
+    dataset_name: str = "gowalla"
+    experiment_name: str = "original"
     batch_size: int = 1024
     batch_size_val: int = 1024
     epoch: int = 400
@@ -20,6 +22,7 @@ class Config:
 
     lr: float = 1e-4
     decay: float = 1e-5
+    early_stop_limit: int = 50
     node_dropout_flag: bool = True
     node_dropout: List[float] = [0.1]
     mess_dropout: List[float] = [0.1, 0.1, 0.1]  # Message dropout
@@ -31,7 +34,7 @@ if __name__ == "__main__":
     simple_logger(f"Use device {Config.device}", __name__)
 
     simple_logger("Initializing data loader", __name__)
-    dataset = Dataset(path="./Data/gowalla")
+    dataset = Dataset(path=f"./Data/{Config.dataset_name}")
     dataset.load()
 
     norm_adj = Preprocessor(dataset).get_adjacency_matrix()
@@ -42,7 +45,8 @@ if __name__ == "__main__":
     sampler = Sampler(dataset, batch_size=Config.batch_size)
 
     simple_logger("Start training", __name__)
-    best_precision = 0.0
+    best_recall = 0.0
+    successive_non_improve_cnt = 0
     precisions, recalls, ndcgs = [], [], []
     for epoch in range(Config.epoch):
         loss, mf_loss, emb_loss = 0.0, 0.0, 0.0
@@ -86,17 +90,26 @@ if __name__ == "__main__":
         precisions.append(evals["precision"])
         recalls.append(evals["recall"])
         ndcgs.append(evals["ndcg"])
-        if evals["precision"] > best_precision:
+        if evals["recall"] > best_recall:
+            successive_non_improve_cnt = 0
             simple_logger(
-                f"Precision@20 increased {best_precision} → {evals['precision']}",
+                f"Recall@20 increased {best_recall} → {evals['recall']}",
                 __name__,
             )
-            best_precision = evals["precision"]
-            torch.save(model.state_dict(), "best_model.pkl")
+            best_recall = evals["recall"]
+            torch.save(
+                model.state_dict(),
+                f"{Config.dataset_name}_{Config.experiment_name}_best_model.pkl",
+            )
             simple_logger("Saved model", __name__)
         else:
-            simple_logger(f"Best precision remain {best_precision}", __name__)
+            successive_non_improve_cnt += 1
+            simple_logger(f"Best precision remain {best_recall}", __name__)
 
-    np.save("precision", precisions)
-    np.save("recall", recall)
-    np.save("ndcg", ndcg)
+        if successive_non_improve_cnt >= Config.early_stop_limit:
+            simple_logger(f"Early stopped at epoch {epoch}", __name__)
+            break
+
+    np.save(f"{Config.dataset_name}_{Config.experiment_name}_precision", precisions)
+    np.save(f"{Config.dataset_name}_{Config.experiment_name}_recall", recalls)
+    np.save(f"{Config.dataset_name}_{Config.experiment_name}_ndcg", ndcgs)
