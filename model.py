@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from scipy import sparse as sp
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 
 class NGCF(nn.Module):
@@ -28,7 +28,7 @@ class NGCF(nn.Module):
 
         self.embedding_dict, self.weight_dict = self.init_weight()
 
-    def init_weight(self):
+    def init_weight(self) -> Tuple[Dict[str, torch.Tensor]]:
         embedding_dict = nn.ParameterDict(
             {
                 "user_emb": nn.Parameter(
@@ -67,7 +67,7 @@ class NGCF(nn.Module):
         pos_items: List[int],
         neg_items: List[int],
         drop_flag: bool = True,
-    ):
+    ) -> Tuple[torch.Tensor]:
         if drop_flag:
             A_hat = self.sparse_dropout(
                 self.sparse_norm_adj, self.node_dropout, self.sparse_norm_adj._nnz()
@@ -133,7 +133,7 @@ class NGCF(nn.Module):
 
         return out * (1.0 / (1 - rate))
 
-    def _convert_sp_mat_to_sp_tensor(self, X):
+    def _convert_sp_mat_to_sp_tensor(self, X) -> torch.Tensor:
         coo = X.tocoo()
         i = torch.LongTensor([coo.row, coo.col])
         v = torch.from_numpy(coo.data).float()
