@@ -23,15 +23,15 @@ If you want to change some parameters, edit `Config` in main.py.
 
 Run the training with the same condition of the original paper.
 
-Epochs: 400
-Learning rate: 1e-4
-batch size: 1024
-embedding dimension: 64
-Number of GCN layers: 3
-(Node|Message) Dropout ratio: 0.1
-L2 regulation strength: 1e-5
-Evaluation metrics to choose best model: Recall@20
-Early stopping: 50
+- Epochs: 400
+- Learning rate: 1e-4
+- batch size: 1024
+- embedding dimension: 64
+- Number of GCN layers: 3
+- (Node|Message) Dropout ratio: 0.1
+- L2 regulation strength: 1e-5
+- Evaluation metrics to choose best model: Recall@20
+- Early stopping: 50
 
 ### GPU Memory consumption
 
@@ -43,4 +43,4 @@ Early stopping: 50
 Dataset | Recall@20 | NDCG@20 | Precision@20
 ------- | --------- | ------- | ------------
 Gowalla | 0.1538    | 0.1295  | 0.04720
-Amazon  | - | - | -
+Amazon  | (wip) | (wip) | (wip)
