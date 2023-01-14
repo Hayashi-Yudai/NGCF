@@ -27,7 +27,7 @@ Run the training with the same condition of the original paper.
 - Learning rate: 1e-4
 - batch size: 1024
 - embedding dimension: 64
-- Number of GCN layers: 3
+- Number of embedding propagation layers: 3
 - (Node|Message) Dropout ratio: 0.1
 - L2 regulation strength: 1e-5
 - Evaluation metrics to choose best model: Recall@20
