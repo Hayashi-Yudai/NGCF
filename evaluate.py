@@ -58,7 +58,6 @@ def evaluate(
 
 if __name__ == "__main__":
     import torch
-    import time
 
     from model import NGCF
     from data_loader import Dataset, Preprocessor
