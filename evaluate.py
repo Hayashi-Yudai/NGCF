@@ -27,7 +27,7 @@ def evaluate(
     for num, user_batch in tqdm(enumerate(user_batches)):
         # NOTE: Split in batch if OOM
         user_embs, item_embs, _ = model(user_batch, items, [], drop_flag=False)
-        ratings = (
+        ratings: np.ndarray = (
             model.rating(user_embs, item_embs).detach().cpu().numpy()
         )  # user_num x item_num
 
@@ -35,10 +35,13 @@ def evaluate(
             user_ratings = ratings[idx]
             items_in_train = train_data[user]
 
-            ranking_idx = np.argsort(-user_ratings)
+            eval_idx = np.isin(items, items_in_train)
+
             # Create ranking with items not in training data
-            ranking = items[ranking_idx]
-            ranking = ranking[~np.isin(ranking, items_in_train)][:k]
+            items_for_eval = items[~eval_idx]
+            user_ratings = user_ratings[~eval_idx]
+            ranking_idx = np.argpartition(user_ratings, -k)[-k:]
+            ranking = items_for_eval[ranking_idx]
             ground_truth = test_data[user]  # Item IDs
             gt_scores = [1.0] * len(ground_truth)
             scores = np.zeros_like(ranking)
@@ -55,6 +58,7 @@ def evaluate(
 
 if __name__ == "__main__":
     import torch
+    import time
 
     from model import NGCF
     from data_loader import Dataset, Preprocessor
