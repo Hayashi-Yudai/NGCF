@@ -42,5 +42,18 @@ Run the training with the same condition of the original paper.
 
 Dataset | Recall@20 | NDCG@20 | Precision@20
 ------- | --------- | ------- | ------------
-Gowalla | 0.1538    | 0.1295  | 0.04720
+Gowalla | 0.1538    | 0.1295  | 0.0472
 Amazon  | 0.0311 | 0.0239 | 0.0132
+
+Recall@20 and NDCG@20 is almost as large as the original paper's result.
+
+#### The number of embedding propagation layer vs scores
+
+Dataset: Gowalla
+
+       | Recall@20 | NDCG@20 | Precision@20
+------ | --------- | ------- | ------------
+NGCF-1 | 0.1446    | 0.1233  | 0.0446
+NGCF-2 | wip       | wip     | wip
+NGCF-3 | 0.1538    | 0.1295  | 0.0472
+NGCF-4 | wip       | wip     | wip
