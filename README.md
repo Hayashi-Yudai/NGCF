@@ -43,4 +43,4 @@ Run the training with the same condition of the original paper.
 Dataset | Recall@20 | NDCG@20 | Precision@20
 ------- | --------- | ------- | ------------
 Gowalla | 0.1538    | 0.1295  | 0.04720
-Amazon  | (wip) | (wip) | (wip)
+Amazon  | 0.0311 | 0.0239 | 0.0132
