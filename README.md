@@ -51,7 +51,7 @@ Recall@20 and NDCG@20 is almost as large as the original paper's result.
 
 Dataset: Gowalla
 
-       | Recall@20 | NDCG@20 | Precision@20
+model  | Recall@20 | NDCG@20 | Precision@20
 ------ | --------- | ------- | ------------
 NGCF-1 | 0.1446    | 0.1233  | 0.0446
 NGCF-2 | wip       | wip     | wip
