@@ -63,6 +63,6 @@ Dataset: Gowalla
 model  | Recall@20 | NDCG@20 | Precision@20
 ------ | --------- | ------- | ------------
 NGCF-1 | 0.1446    | 0.1233  | 0.0446
-NGCF-2 | wip       | wip     | wip
+NGCF-2 | 0.1472    | 0.0816  | 0.0456
 NGCF-3 | 0.1538    | 0.1295  | 0.0472
-NGCF-4 | wip       | wip     | wip
+NGCF-4 | 0.1534    | 0.0849  | 0.0468
