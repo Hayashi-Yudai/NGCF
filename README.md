@@ -33,7 +33,16 @@ Run the training with the same condition of the original paper.
 - Evaluation metrics to choose best model: Recall@20
 - Early stopping: 50
 
+### Dataset
+
+- [Gowalla](https://snap.stanford.edu/data/loc-gowalla.html)
+- [Amazon-Book](http://jmcauley.ucsd.edu/data/amazon/)
+
+Experiments were performed on both dataset in the 10-core setting as the original paper did.
+
 ### GPU Memory consumption
+
+Used GPU: Tesla T4
 
 - Gowalla: 1.5 GB
 - Amazon-Book: 3.3 GB
