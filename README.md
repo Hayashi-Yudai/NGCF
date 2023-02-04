@@ -38,7 +38,7 @@ Run the training with the same condition of the original paper.
 - [Gowalla](https://snap.stanford.edu/data/loc-gowalla.html)
 - [Amazon-Book](http://jmcauley.ucsd.edu/data/amazon/)
 
-Experiments were performed on both dataset in the 10-core setting as the original paper did.
+Experiments were performed on both datasets in the 10-core setting as the original paper did.
 
 ### GPU Memory consumption
 
