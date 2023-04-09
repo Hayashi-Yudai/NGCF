@@ -54,12 +54,12 @@ Dataset | Recall@20 | NDCG@20 | Precision@20
 Gowalla | 0.1538    | 0.1295  | 0.0472
 Amazon  | 0.0311 | 0.0239 | 0.0132
 
-Recalls in training Gowalla dataset
+Recall in training Gowalla dataset
 
 <img width="500" alt="image" src="https://user-images.githubusercontent.com/34836226/216570513-7bdc8db9-d782-4044-9cd9-6f84db971c20.png">
 
 
-Recall@20 and NDCG@20 is almost as large as the original paper's result.
+Recall@20 and NDCG@20 are almost as large as the original paper's result.
 
 #### The number of embedding propagation layer vs scores
 
