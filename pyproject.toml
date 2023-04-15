@@ -7,13 +7,12 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<4.0"
-torch = "^1.13.1"
-numpy = "^1.24.1"
-scipy = "^1.9.3"
-scikit-learn = "^1.2.0"
-tqdm = "^4.64.1"
-
+python = ">=3.10,<3.12"
+torch = "^2.0.0"
+numpy = "^1.24.2"
+scipy = "^1.10.1"
+scikit-learn = "^1.2.2"
+tqdm = "^4.65.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.12.0"

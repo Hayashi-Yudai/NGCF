@@ -123,7 +123,7 @@ class Sampler:
         self.dataset = dataset
         self.batch_size = batch_size
 
-    def sample(self) -> Tuple[List[int]]:
+    def sample(self) -> Tuple[List[int], List[int], List[int]]:
         users = random.sample(self.dataset.users, self.batch_size)
 
         pos_items = []
