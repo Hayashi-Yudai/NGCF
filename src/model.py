@@ -180,7 +180,3 @@ class NGCF(nn.Module):
         self, u_g_embeddings: torch.Tensor, i_g_embeddings: torch.Tensor
     ) -> float:
         return torch.matmul(u_g_embeddings, i_g_embeddings.t())
-
-
-if __name__ == "__main__":
-    model = MF(100, 100, None)
