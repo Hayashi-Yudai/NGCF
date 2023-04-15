@@ -127,14 +127,14 @@ class MFTrainer:
         successive_non_improve_cnt = 0
         precisions, recalls, ndcgs = [], [], []
         for epoch in range(Config.epoch):
-            loss, mf_loss, emb_loss = 0.0, 0.0, 0.0
+            loss = 0.0
             n_batch = dataset.train_num // Config.batch_size + 1
 
             simple_logger(f"n_batch: {n_batch}", __name__)
             for idx in tqdm(range(n_batch)):
                 users, pos_items, neg_items = sampler.sample()
                 u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings = self.model(
-                    users, pos_items, neg_items, drop_flag=Config.node_dropout_flag
+                    users, pos_items, neg_items
                 )
                 batch_loss = self.model.create_bpr_loss(
                     u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings
@@ -149,8 +149,6 @@ class MFTrainer:
             if (epoch + 1) % 10 != 0:
                 simple_logger(f"Epoch {epoch}", __name__)
                 simple_logger(f"\tloss: {loss:.5f}", __name__)
-                simple_logger(f"\tmf_loss: {mf_loss:.5f}", __name__)
-                simple_logger(f"\temb_loss: {emb_loss:.5f}", __name__)
 
             simple_logger(f"Finished epoch: {epoch}", __name__)
             simple_logger("Start evaluation", __name__)
