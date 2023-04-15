@@ -45,8 +45,6 @@ class MF(nn.Module):
     def create_bpr_loss(
         self, users: torch.Tensor, pos_items: torch.Tensor, neg_items: torch.Tensor
     ) -> Tuple[torch.Tensor]:
-        # pos_scores = (users * pos_items).sum(axis=1)
-        # neg_scores = (users * neg_items).sum(axi=1)
         pos_scores = torch.sum(torch.mul(users, pos_items), axis=1)
         neg_scores = torch.sum(torch.mul(users, neg_items), axis=1)
 
