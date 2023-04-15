@@ -5,6 +5,65 @@ from scipy import sparse as sp
 from typing import List, Tuple, Dict
 
 
+class MF(nn.Module):
+    def __init__(self, n_user: int, n_item: int, config) -> None:
+        super(MF, self).__init__()
+
+        self.n_user: int = n_user
+        self.n_item: int = n_item
+        self.device: str = config.device
+        self.emb_size: int = config.emb_size
+        self.batch_size: int = config.batch_size
+        self.reg: float = config.decay
+
+        self.params = self.init_weight()
+
+    def init_weight(self):
+        self.user_matrix = nn.Parameter(
+            nn.init.xavier_uniform_(torch.empty(self.n_user, self.emb_size))
+        )
+        self.item_matrix = nn.Parameter(
+            nn.init.xavier_uniform_(torch.empty(self.n_item, self.emb_size))
+        )
+
+        params = nn.ParameterDict({"user": self.user_matrix, "item": self.item_matrix})
+        return params
+
+    def forward(
+        self,
+        users: torch.Tensor,
+        pos_items: torch.Tensor,
+        neg_items: torch.Tensor,
+        drop_flag: bool = True,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        user_embeddings = self.user_matrix[users]
+        pos_item_embeddings = self.item_matrix[pos_items]
+        neg_item_embeddings = self.item_matrix[neg_items]
+
+        return user_embeddings, pos_item_embeddings, neg_item_embeddings
+
+    def create_bpr_loss(
+        self, users: torch.Tensor, pos_items: torch.Tensor, neg_items: torch.Tensor
+    ) -> Tuple[torch.Tensor]:
+        # pos_scores = (users * pos_items).sum(axis=1)
+        # neg_scores = (users * neg_items).sum(axi=1)
+        pos_scores = torch.sum(torch.mul(users, pos_items), axis=1)
+        neg_scores = torch.sum(torch.mul(users, neg_items), axis=1)
+
+        loss = -torch.sum(nn.LogSigmoid()(pos_scores - neg_scores))
+
+        regularizer = (
+            torch.norm(users) ** 2
+            + torch.norm(pos_items) ** 2
+            + torch.norm(neg_items) ** 2
+        )
+
+        return loss + self.reg * regularizer
+
+    def rating(self, user: torch.Tensor, item: torch.Tensor) -> float:
+        return torch.matmul(user, item.t())
+
+
 class NGCF(nn.Module):
     def __init__(
         self, n_user: int, n_item: int, norm_adj: sp.csr_matrix, config
@@ -163,3 +222,7 @@ class NGCF(nn.Module):
         self, u_g_embeddings: torch.Tensor, i_g_embeddings: torch.Tensor
     ) -> float:
         return torch.matmul(u_g_embeddings, i_g_embeddings.t())
+
+
+if __name__ == "__main__":
+    model = MF(100, 100, None)

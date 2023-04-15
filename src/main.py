@@ -6,7 +6,7 @@ from typing import List
 import numpy as np
 
 from data_loader import Dataset, Preprocessor, Sampler
-from model import NGCF
+from model import NGCF, MF
 from evaluate import evaluate
 from util import simple_logger
 
@@ -40,7 +40,8 @@ if __name__ == "__main__":
     norm_adj = Preprocessor(dataset).get_adjacency_matrix()
 
     simple_logger("Initializing model", __name__)
-    model = NGCF(dataset.user_num, dataset.item_num, norm_adj, Config).to(Config.device)
+    # model = NGCF(dataset.user_num, dataset.item_num, norm_adj, Config).to(Config.device)
+    model = MF(dataset.user_num, dataset.item_num, Config).to(Config.device)
     optimizer = optim.Adam(model.parameters(), lr=Config.lr)
     sampler = Sampler(dataset, batch_size=Config.batch_size)
 
@@ -58,7 +59,10 @@ if __name__ == "__main__":
             u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings = model(
                 users, pos_items, neg_items, drop_flag=Config.node_dropout_flag
             )
-            batch_loss, batch_mf_loss, batch_emb_loss = model.create_bpr_loss(
+            # batch_loss, batch_mf_loss, batch_emb_loss = model.create_bpr_loss(
+            #     u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings
+            # )
+            batch_loss = model.create_bpr_loss(
                 u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings
             )
 
@@ -67,8 +71,8 @@ if __name__ == "__main__":
             optimizer.step()
 
             loss += batch_loss
-            mf_loss += batch_mf_loss
-            emb_loss += batch_emb_loss
+            # mf_loss += batch_mf_loss
+            # emb_loss += batch_emb_loss
 
         if (epoch + 1) % 10 != 0:
             simple_logger(f"Epoch {epoch}", __name__)
