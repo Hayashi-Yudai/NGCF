@@ -38,22 +38,6 @@ class MF(nn.Module):
 
         return user_embeddings, pos_item_embeddings, neg_item_embeddings
 
-    def create_bpr_loss(
-        self, users: torch.Tensor, pos_items: torch.Tensor, neg_items: torch.Tensor
-    ) -> Tuple[torch.Tensor]:
-        pos_scores = torch.sum(torch.mul(users, pos_items), axis=1)
-        neg_scores = torch.sum(torch.mul(users, neg_items), axis=1)
-
-        loss = -torch.sum(nn.LogSigmoid()(pos_scores - neg_scores))
-
-        regularizer = (
-            torch.norm(users) ** 2
-            + torch.norm(pos_items) ** 2
-            + torch.norm(neg_items) ** 2
-        )
-
-        return loss + self.reg * regularizer
-
     def rating(self, user: torch.Tensor, item: torch.Tensor) -> float:
         return torch.matmul(user, item.t())
 
@@ -81,7 +65,7 @@ class NGCF(nn.Module):
 
         self.embedding_dict, self.weight_dict = self.init_weight()
 
-    def init_weight(self) -> Tuple[Dict[str, torch.Tensor]]:
+    def init_weight(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
         embedding_dict = nn.ParameterDict(
             {
                 "user_emb": nn.Parameter(
@@ -120,7 +104,7 @@ class NGCF(nn.Module):
         pos_items: List[int],
         neg_items: List[int],
         drop_flag: bool = True,
-    ) -> Tuple[torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         if drop_flag:
             A_hat = self.sparse_dropout(
                 self.sparse_norm_adj, self.node_dropout, self.sparse_norm_adj._nnz()
@@ -191,26 +175,6 @@ class NGCF(nn.Module):
         i = torch.LongTensor([coo.row, coo.col])
         v = torch.from_numpy(coo.data).float()
         return torch.sparse.FloatTensor(i, v, coo.shape)
-
-    def create_bpr_loss(
-        self, users: torch.Tensor, pos_items: torch.Tensor, neg_items: torch.Tensor
-    ) -> Tuple[torch.Tensor]:
-        pos_scores = torch.sum(torch.mul(users, pos_items), axis=1)
-        neg_scores = torch.sum(torch.mul(users, neg_items), axis=1)
-
-        mf_loss = -torch.sum(nn.LogSigmoid()(pos_scores - neg_scores))
-
-        regularizer = (
-            torch.norm(users) ** 2
-            + torch.norm(pos_items) ** 2
-            + torch.norm(neg_items) ** 2
-        )
-        for w in self.weight_dict.values():
-            regularizer += torch.norm(w) ** 2
-
-        emb_loss = self.decay * regularizer
-
-        return mf_loss + emb_loss, mf_loss, emb_loss
 
     def rating(
         self, u_g_embeddings: torch.Tensor, i_g_embeddings: torch.Tensor
