@@ -82,7 +82,6 @@ class NGCFTrainer:
             simple_logger(f"Epoch {epoch}", __name__)
             simple_logger(f"\tloss: {loss:.5f}", __name__)
 
-            simple_logger(f"Finished epoch: {epoch}", __name__)
             self.model.eval()
             self.validate()
 
@@ -111,22 +110,28 @@ class NGCFTrainer:
                 f"Recall@20 increased {self.best_recall} → {evals['recall']}",
                 __name__,
             )
-            best_recall = evals["recall"]
+            self.best_recall = evals["recall"]
             torch.save(
                 self.model.state_dict(),
-                f"{Config.dataset_name}_{Config.experiment_name}_best_model.pkl",
+                f"./outputs/{Config.dataset_name}_{Config.experiment_name}_best_model.pkl",
             )
             simple_logger("Saved model", __name__)
         else:
             successive_non_improve_cnt += 1
-            simple_logger(f"Best precision remain {best_recall}", __name__)
+            simple_logger(f"Best precision remain {self.best_recall}", __name__)
 
     def save_history(self):
         np.save(
-            f"{Config.dataset_name}_{Config.experiment_name}_precision", self.precisions
+            f"./outputs/{Config.dataset_name}_{Config.experiment_name}_precision",
+            self.precisions,
         )
-        np.save(f"{Config.dataset_name}_{Config.experiment_name}_recall", self.recalls)
-        np.save(f"{Config.dataset_name}_{Config.experiment_name}_ndcg", self.ndcgs)
+        np.save(
+            f"./outputs/{Config.dataset_name}_{Config.experiment_name}_recall",
+            self.recalls,
+        )
+        np.save(
+            f"./outputs/{Config.dataset_name}_{Config.experiment_name}_ndcg", self.ndcgs
+        )
 
 
 class MFTrainer:
@@ -159,7 +164,7 @@ class MFTrainer:
             for idx in tqdm(range(n_batch)):
                 users, pos_items, neg_items = self.sampler.sample()
                 u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings = self.model(
-                    users, pos_items, neg_items
+                    users, pos_items, neg_items, False
                 )
                 batch_loss = self.loss_fn(
                     u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings
@@ -175,7 +180,6 @@ class MFTrainer:
                 simple_logger(f"Epoch {epoch}", __name__)
                 simple_logger(f"\tloss: {loss:.5f}", __name__)
 
-            simple_logger(f"Finished epoch: {epoch}", __name__)
             self.validate()
 
             if self.successive_non_improve_cnt >= Config.early_stop_limit:
@@ -204,22 +208,28 @@ class MFTrainer:
                 f"Recall@20 increased {self.best_recall} → {evals['recall']}",
                 __name__,
             )
-            best_recall = evals["recall"]
+            self.best_recall = evals["recall"]
             torch.save(
                 self.model.state_dict(),
-                f"{Config.dataset_name}_{Config.experiment_name}_best_model.pkl",
+                f"./outputs/{Config.dataset_name}_{Config.experiment_name}_best_model.pkl",
             )
             simple_logger("Saved model", __name__)
         else:
             successive_non_improve_cnt += 1
-            simple_logger(f"Best precision remain {best_recall}", __name__)
+            simple_logger(f"Best precision remain {self.best_recall}", __name__)
 
     def save_history(self):
         np.save(
-            f"{Config.dataset_name}_{Config.experiment_name}_precision", self.precisions
+            f"./outputs/{Config.dataset_name}_{Config.experiment_name}_precision",
+            self.precisions,
         )
-        np.save(f"{Config.dataset_name}_{Config.experiment_name}_recall", self.recalls)
-        np.save(f"{Config.dataset_name}_{Config.experiment_name}_ndcg", self.ndcgs)
+        np.save(
+            f"./outputs/{Config.dataset_name}_{Config.experiment_name}_recall",
+            self.recalls,
+        )
+        np.save(
+            f"./outputs/{Config.dataset_name}_{Config.experiment_name}_ndcg", self.ndcgs
+        )
 
 
 if __name__ == "__main__":
@@ -231,7 +241,7 @@ if __name__ == "__main__":
 
     sampler = Sampler(dataset, batch_size=Config.batch_size)
     optimizer = optim.Adam
-    loss_fn = BPRLoss()
+    loss_fn = BPRLoss(regularize=Config.decay)
 
-    trainer = NGCFTrainer(dataset, sampler, optimizer, loss_fn, Config())
+    trainer = MFTrainer(dataset, sampler, optimizer, loss_fn, Config())
     trainer.fit()

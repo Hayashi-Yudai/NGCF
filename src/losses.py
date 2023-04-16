@@ -23,7 +23,7 @@ class BPRLoss(nn.Module):
                 torch.norm(user) ** 2
                 + torch.norm(pos_item) ** 2
                 + torch.norm(neg_item) ** 2
-            )
+            ) / len(user)
 
             loss += self.regularize * norms
 
