@@ -15,7 +15,7 @@ from util import simple_logger
 
 class Config:
     dataset_name: str = "gowalla"
-    experiment_name: str = "test"
+    experiment_name: str = "ngcf"
     batch_size: int = 1024
     batch_size_val: int = 1024
     epoch: int = 400
@@ -26,7 +26,7 @@ class Config:
     decay: float = 1e-5
     early_stop_limit: int = 50
     node_dropout_flag: bool = True
-    node_dropout: List[float] = [0.1]
+    node_dropout: List[float] = [0.0]
     mess_dropout: List[float] = [0.1, 0.1, 0.1]  # Message dropout
 
     device: str = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -117,7 +117,7 @@ class NGCFTrainer:
             )
             simple_logger("Saved model", __name__)
         else:
-            successive_non_improve_cnt += 1
+            self.successive_non_improve_cnt += 1
             simple_logger(f"Best precision remain {self.best_recall}", __name__)
 
     def save_history(self):
@@ -215,7 +215,7 @@ class MFTrainer:
             )
             simple_logger("Saved model", __name__)
         else:
-            successive_non_improve_cnt += 1
+            self.successive_non_improve_cnt += 1
             simple_logger(f"Best precision remain {self.best_recall}", __name__)
 
     def save_history(self):

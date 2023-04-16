@@ -31,7 +31,7 @@ class MF(nn.Module):
         users: torch.Tensor,
         pos_items: torch.Tensor,
         neg_items: torch.Tensor,
-        drop_flg: bool,
+        drop_flag: bool,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         user_embeddings = self.user_matrix[users]
         pos_item_embeddings = self.item_matrix[pos_items]
