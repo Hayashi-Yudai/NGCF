@@ -6,8 +6,8 @@ Pytorch implementation of NGCF.
 
 ## Environment
 
-- Python 3.8.10
-- torch ^1.13.1
+- Python 3.10
+- torch ^2.0.0
 
 ## How to train
 
