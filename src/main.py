@@ -105,7 +105,7 @@ class NGCFTrainer:
         self.recalls.append(evals["recall"])
         self.ndcgs.append(evals["ndcg"])
         if evals["recall"] > self.best_recall:
-            successive_non_improve_cnt = 0
+            self.successive_non_improve_cnt = 0
             simple_logger(
                 f"Recall@20 increased {self.best_recall} → {evals['recall']}",
                 __name__,
@@ -203,7 +203,7 @@ class MFTrainer:
         self.recalls.append(evals["recall"])
         self.ndcgs.append(evals["ndcg"])
         if evals["recall"] > self.best_recall:
-            successive_non_improve_cnt = 0
+            self.successive_non_improve_cnt = 0
             simple_logger(
                 f"Recall@20 increased {self.best_recall} → {evals['recall']}",
                 __name__,
@@ -243,5 +243,5 @@ if __name__ == "__main__":
     optimizer = optim.Adam
     loss_fn = BPRLoss(regularize=Config.decay)
 
-    trainer = MFTrainer(dataset, sampler, optimizer, loss_fn, Config())
+    trainer = NGCFTrainer(dataset, sampler, optimizer, loss_fn, Config())
     trainer.fit()
